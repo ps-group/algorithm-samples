@@ -18,31 +18,27 @@ struct Vertex
 {
 	// Стоимость кратчайшего пути из начальной вершины в вершину i.
 	int64_t cost = 0;
-	// Индекс предыдущей вершины по кратчайшем пути.
+	// Индекс предыдущей вершины по кратчайшему пути.
 	size_t previous = 0;
 };
 
 class CGraph
 {
 public:
+	// "Бесконечно" большая стоимость, используется как маркер для непройденных вершин.
 	static const int64_t INFINITIVE_COST;
 
 	CGraph();
 	~CGraph();
 
-	void ReadText(std::istream & in);
+	bool ReadText(std::istream & in);
 	void RunBellmanFord(std::ostream & out);
 
 private:
 	class CNegativeLoopException : public std::exception
 	{
 	public:
-		CNegativeLoopException(size_t vertexId)
-			: std::exception("negative loop")
-			, m_vertexId(vertexId)
-		{
-		}
-
+		CNegativeLoopException(size_t vertexId);
 		size_t m_vertexId;
 	};
 

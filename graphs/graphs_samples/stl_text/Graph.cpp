@@ -1,10 +1,16 @@
-#include "stdafx.h"
+п»ї#include "stdafx.h"
 #include "Graph.h"
 
 
-// "Бесконечно" большая стоимость, используется как маркер для непройденных вершин.
+// "Р‘РµСЃРєРѕРЅРµС‡РЅРѕ" Р±РѕР»СЊС€Р°СЏ СЃС‚РѕРёРјРѕСЃС‚СЊ, РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РєР°Рє РјР°СЂРєРµСЂ РґР»СЏ РЅРµРїСЂРѕР№РґРµРЅРЅС‹С… РІРµСЂС€РёРЅ.
 const int64_t CGraph::INFINITIVE_COST = std::numeric_limits<int64_t>::max();
 
+
+CGraph::CNegativeLoopException::CNegativeLoopException(size_t vertexId)
+	: std::exception("negative loop")
+	, m_vertexId(vertexId)
+{
+}
 
 CGraph::CGraph()
 {
@@ -15,12 +21,12 @@ CGraph::~CGraph()
 {
 }
 
-void CGraph::ReadText(std::istream & in)
+bool CGraph::ReadText(std::istream & in)
 {
 	size_t edgeCount = 0;
 	size_t vertexCount = 0;
 	in >> vertexCount >> edgeCount >> m_startId;
-	// индекс уменьшаем на единицу, т.к. индексация массива начинается с 0.
+	// РёРЅРґРµРєСЃ СѓРјРµРЅСЊС€Р°РµРј РЅР° РµРґРёРЅРёС†Сѓ, С‚.Рє. РёРЅРґРµРєСЃР°С†РёСЏ РјР°СЃСЃРёРІР° РЅР°С‡РёРЅР°РµС‚СЃСЏ СЃ 0.
 	--m_startId;
 
 	m_edges.resize(edgeCount);
@@ -29,15 +35,22 @@ void CGraph::ReadText(std::istream & in)
 	for (Edge &edge : m_edges)
 	{
 		in >> edge.start >> edge.end >> edge.weight;
-		// индексы уменьшаем на единицу, т.к. индексация массива начинается с 0.
+		if (!in)
+		{
+			return false;
+		}
+
+		// РёРЅРґРµРєСЃС‹ СѓРјРµРЅСЊС€Р°РµРј РЅР° РµРґРёРЅРёС†Сѓ, С‚.Рє. РёРЅРґРµРєСЃР°С†РёСЏ РјР°СЃСЃРёРІР° РЅР°С‡РёРЅР°РµС‚СЃСЏ СЃ 0.
 		--edge.start;
 		--edge.end;
 	}
+
+	return true;
 }
 
-// Алгоритм Беллмана-Форда:
+// РђР»РіРѕСЂРёС‚Рј Р‘РµР»Р»РјР°РЅР°-Р¤РѕСЂРґР°:
 // https://en.wikipedia.org/wiki/Bellman%E2%80%93Ford_algorithm
-// Псевдокод (без поиска отрицательных циклов):
+// РџСЃРµРІРґРѕРєРѕРґ (Р±РµР· РїРѕРёСЃРєР° РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹С… С†РёРєР»РѕРІ):
 //	for v : Vertices:
 //		vertex_cost(v) = +INFINITY
 //  vertex_cost(v_start) = 0
@@ -46,8 +59,8 @@ void CGraph::ReadText(std::istream & in)
 //			if vertex_cost(v_i) > vertex_cost(u) + edge_weight(u->v):
 //				vertex_cost(v_i)
 //
-// Для поиска отрицательных циклов мы прогоняем последнюю итерацию.
-// Если отрицательных весов нет, это делать не обязательно.
+// Р”Р»СЏ РїРѕРёСЃРєР° РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹С… С†РёРєР»РѕРІ РјС‹ РїСЂРѕРіРѕРЅСЏРµРј РїРѕСЃР»РµРґРЅСЋСЋ РёС‚РµСЂР°С†РёСЋ.
+// Р•СЃР»Рё РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹С… РІРµСЃРѕРІ РЅРµС‚, СЌС‚Рѕ РґРµР»Р°С‚СЊ РЅРµ РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ.
 void CGraph::RunBellmanFord(std::ostream & out)
 {
 	try
@@ -56,8 +69,8 @@ void CGraph::RunBellmanFord(std::ostream & out)
 		for (size_t i = 0; i < m_verticies.size(); ++i)
 		{
 			const bool isLastIteration = (i + 1 == m_verticies.size());
-			// Обновляем состояние проходом по всем рёбрам.
-			// Оптимизация алгоритма: если состояние не изменилось, прерываем цикл.
+			// РћР±РЅРѕРІР»СЏРµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РїСЂРѕС…РѕРґРѕРј РїРѕ РІСЃРµРј СЂС‘Р±СЂР°Рј.
+			// РћРїС‚РёРјРёР·Р°С†РёСЏ Р°Р»РіРѕСЂРёС‚РјР°: РµСЃР»Рё СЃРѕСЃС‚РѕСЏРЅРёРµ РЅРµ РёР·РјРµРЅРёР»РѕСЃСЊ, РїСЂРµСЂС‹РІР°РµРј С†РёРєР».
 			if (!UpdateBellmanFordState(isLastIteration))
 			{
 				break;
@@ -67,19 +80,19 @@ void CGraph::RunBellmanFord(std::ostream & out)
 	}
 	catch (CNegativeLoopException const& ex)
 	{
-		// Найден цикл отрицательной стоимости, печатаем его.
+		// РќР°Р№РґРµРЅ С†РёРєР» РѕС‚СЂРёС†Р°С‚РµР»СЊРЅРѕР№ СЃС‚РѕРёРјРѕСЃС‚Рё, РїРµС‡Р°С‚Р°РµРј РµРіРѕ.
 		PrintNegativeLoop(ex.m_vertexId, out);
 	}
 }
 
 void CGraph::InitBellmanFordState()
 {
-	// Выставляем всем бесконечную стоимость.
+	// Р’С‹СЃС‚Р°РІР»СЏРµРј РІСЃРµРј Р±РµСЃРєРѕРЅРµС‡РЅСѓСЋ СЃС‚РѕРёРјРѕСЃС‚СЊ.
 	for (Vertex &v : m_verticies)
 	{
 		v.cost = INFINITIVE_COST;
 	}
-	// Инициализируем начальную вершину.
+	// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј РЅР°С‡Р°Р»СЊРЅСѓСЋ РІРµСЂС€РёРЅСѓ.
 	{
 		Vertex &start = m_verticies[m_startId];
 		start.cost = 0;
@@ -89,7 +102,7 @@ void CGraph::InitBellmanFordState()
 
 void CGraph::PrintNegativeLoop(size_t vertexId, std::ostream & out)
 {
-	// Обходим цикл, пока не вернёмся к vertexId.
+	// РћР±С…РѕРґРёРј С†РёРєР», РїРѕРєР° РЅРµ РІРµСЂРЅС‘РјСЃСЏ Рє vertexId.
 	std::vector<size_t> negativeLoop;
 	negativeLoop.push_back(vertexId);
 	for (;;)
@@ -101,7 +114,7 @@ void CGraph::PrintNegativeLoop(size_t vertexId, std::ostream & out)
 			break;
 		}
 	}
-	// Меняем порядок на обратный, чтобы распечатать цикл с начала.
+	// РњРµРЅСЏРµРј РїРѕСЂСЏРґРѕРє РЅР° РѕР±СЂР°С‚РЅС‹Р№, С‡С‚РѕР±С‹ СЂР°СЃРїРµС‡Р°С‚Р°С‚СЊ С†РёРєР» СЃ РЅР°С‡Р°Р»Р°.
 	std::reverse(negativeLoop.begin(), negativeLoop.end());
 
 	out << "No" << std::endl;
@@ -159,8 +172,8 @@ bool CGraph::UpdateBellmanFordState(bool isLastIteration)
 		{
 			if (isLastIteration)
 			{
-				// На последней итерации стоимость для какой-то вершины сократилась.
-				// Значит, есть бесконечный цикл.
+				// РќР° РїРѕСЃР»РµРґРЅРµР№ РёС‚РµСЂР°С†РёРё СЃС‚РѕРёРјРѕСЃС‚СЊ РґР»СЏ РєР°РєРѕР№-С‚Рѕ РІРµСЂС€РёРЅС‹ СЃРѕРєСЂР°С‚РёР»Р°СЃСЊ.
+				// Р—РЅР°С‡РёС‚, РµСЃС‚СЊ Р±РµСЃРєРѕРЅРµС‡РЅС‹Р№ С†РёРєР».
 				throw CNegativeLoopException(edge.end);
 			}
 			else

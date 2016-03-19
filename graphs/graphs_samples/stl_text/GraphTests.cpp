@@ -1,4 +1,4 @@
-#include "stdafx.h"
+п»ї#include "stdafx.h"
 #include "Graph.h"
 #include <sstream>
 #include <boost/algorithm/string.hpp>
@@ -73,7 +73,7 @@ No
 4 2 3 1 2
 )***";
 
-// Используем split для игнорирования пробелов и переносов строк при проверке.
+// РСЃРїРѕР»СЊР·СѓРµРј split РґР»СЏ РёРіРЅРѕСЂРёСЂРѕРІР°РЅРёСЏ РїСЂРѕР±РµР»РѕРІ Рё РїРµСЂРµРЅРѕСЃРѕРІ СЃС‚СЂРѕРє РїСЂРё РїСЂРѕРІРµСЂРєРµ.
 vector<string> SplitWords(string const& text)
 {
 	std::string trimmed = boost::trim_copy(text);
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_SUITE(Graph_with_Bellmand_Ford_algorithm)
 		CGraph graph;
 		stringstream input(C_INPUT_1);
 		stringstream output;
-		graph.ReadText(input);
+		BOOST_CHECK(graph.ReadText(input));
 		graph.RunBellmanFord(output);
 		vector<string> words = SplitWords(output.str());
 		vector<string> checkWords = SplitWords(C_OUTPUT_1);
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_SUITE(Graph_with_Bellmand_Ford_algorithm)
 		CGraph graph;
 		stringstream input(C_INPUT_2);
 		stringstream output;
-		graph.ReadText(input);
+		BOOST_CHECK(graph.ReadText(input));
 		graph.RunBellmanFord(output);
 		vector<string> words = SplitWords(output.str());
 		vector<string> checkWords = SplitWords(C_OUTPUT_2);
@@ -115,19 +115,19 @@ BOOST_AUTO_TEST_SUITE(Graph_with_Bellmand_Ford_algorithm)
 		CGraph graph;
 		stringstream input(C_INPUT_3);
 		stringstream output;
-		graph.ReadText(input);
+		BOOST_CHECK(graph.ReadText(input));
 		graph.RunBellmanFord(output);
 		vector<string> words = SplitWords(output.str());
 		vector<string> checkWords = SplitWords(C_OUTPUT_3);
 		BOOST_CHECK(words == checkWords);
 	}
 
-	BOOST_AUTO_TEST_CASE(finds_negative_loops_and_prints_it)
+	BOOST_AUTO_TEST_CASE(finds_negative_loop_and_prints_it)
 	{
 		CGraph graph;
 		stringstream input(C_INPUT_4);
 		stringstream output;
-		graph.ReadText(input);
+		BOOST_CHECK(graph.ReadText(input));
 		graph.RunBellmanFord(output);
 		vector<string> words = SplitWords(output.str());
 		vector<string> checkWords = SplitWords(C_OUTPUT_4);
