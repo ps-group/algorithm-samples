@@ -8,4 +8,5 @@
 - Тема 12, "Графы", в методичке В.И. Галочкина
 - [Графы. Поиск маршрутов (algolist.manual.ru)](http://algolist.manual.ru/maths/graphs/index.php)
 - [Алгоритмы Беллмана-Форда, поиска в ширину и в глубину (habrahabr.ru)](https://habrahabr.ru/users/alexeykuzmin0/topics/)
+- [Примеры для boost.graph (github.com)](https://github.com/richelbilderbeek/BoostGraphTutorial)
 - [Книга о boost.graph (issuu.com)](https://issuu.com/stalkerov/docs/cboostgraphlibrary)
