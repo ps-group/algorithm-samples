@@ -121,78 +121,60 @@ vector<string> SplitWords(string const& text)
 	return words;
 }
 
+void RunGraphvizInputTestcase(std::string const& inputText, std::string const& expectedOutput)
+{
+	CBoostGraph graph;
+	stringstream input(inputText);
+	stringstream output;
+	BOOST_CHECK(graph.ReadGraphviz(input));
+	graph.RunBellmanFord(output);
+	vector<string> words = SplitWords(output.str());
+	vector<string> checkWords = SplitWords(expectedOutput);
+	BOOST_CHECK(words == checkWords);
+}
+
+void RunTextInputTestcase(std::string const& inputText, std::string const& expectedOutput)
+{
+	CBoostGraph graph;
+	stringstream input(inputText);
+	stringstream output;
+	BOOST_CHECK(graph.ReadText(input));
+	graph.RunBellmanFord(output);
+	vector<string> words = SplitWords(output.str());
+	vector<string> checkWords = SplitWords(expectedOutput);
+	BOOST_CHECK(words == checkWords);
+}
+
 }
 
 BOOST_AUTO_TEST_SUITE(Graph_with_Bellmand_Ford_algorithm)
 	BOOST_AUTO_TEST_CASE(can_load_graphviz_format)
 	{
-		CBoostGraph graph;
-		stringstream input(C_INPUT_DOT_1);
-		stringstream output;
-		BOOST_CHECK(graph.ReadGraphviz(input));
-		graph.RunBellmanFord(output);
-		vector<string> words = SplitWords(output.str());
-		vector<string> checkWords = SplitWords(C_OUTPUT_1);
-		BOOST_CHECK(words == checkWords);
+		RunGraphvizInputTestcase(C_INPUT_DOT_1, C_OUTPUT_1);
 	}
 
 	BOOST_AUTO_TEST_CASE(can_load_text_format)
 	{
-		CBoostGraph graph;
-		stringstream input(C_INPUT_TEXT_1);
-		stringstream output;
-		BOOST_CHECK(graph.ReadText(input));
-		graph.RunBellmanFord(output);
-		vector<string> words = SplitWords(output.str());
-		vector<string> checkWords = SplitWords(C_OUTPUT_1);
-		BOOST_CHECK(words == checkWords);
+		RunTextInputTestcase(C_INPUT_TEXT_1, C_OUTPUT_1);
 	}
 
 	BOOST_AUTO_TEST_CASE(has_no_negative_loop_false_positives)
 	{
-		CBoostGraph graph;
-		stringstream input(C_INPUT_DOT_2);
-		stringstream output;
-		BOOST_CHECK(graph.ReadGraphviz(input));
-		graph.RunBellmanFord(output);
-		vector<string> words = SplitWords(output.str());
-		vector<string> checkWords = SplitWords(C_OUTPUT_2);
-		BOOST_CHECK(words == checkWords);
+		RunGraphvizInputTestcase(C_INPUT_DOT_2, C_OUTPUT_2);
 	}
 
 	BOOST_AUTO_TEST_CASE(prints_No_if_no_path)
 	{
-		CBoostGraph graph;
-		stringstream input(C_INPUT_DOT_3);
-		stringstream output;
-		BOOST_CHECK(graph.ReadGraphviz(input));
-		graph.RunBellmanFord(output);
-		vector<string> words = SplitWords(output.str());
-		vector<string> checkWords = SplitWords(C_OUTPUT_3);
-		BOOST_CHECK(words == checkWords);
+		RunGraphvizInputTestcase(C_INPUT_DOT_3, C_OUTPUT_3);
 	}
 
 	BOOST_AUTO_TEST_CASE(finds_negative_loop_and_prints_it_for_dot_input)
 	{
-		CBoostGraph graph;
-		stringstream input(C_INPUT_DOT_4);
-		stringstream output;
-		BOOST_CHECK(graph.ReadGraphviz(input));
-		graph.RunBellmanFord(output);
-		vector<string> words = SplitWords(output.str());
-		vector<string> checkWords = SplitWords(C_OUTPUT_4);
-		BOOST_CHECK(words == checkWords);
+		RunGraphvizInputTestcase(C_INPUT_DOT_4, C_OUTPUT_4);
 	}
 
 	BOOST_AUTO_TEST_CASE(finds_negative_loop_and_prints_it_for_text_input)
 	{
-		CBoostGraph graph;
-		stringstream input(C_INPUT_TEXT_4);
-		stringstream output;
-		BOOST_CHECK(graph.ReadText(input));
-		graph.RunBellmanFord(output);
-		vector<string> words = SplitWords(output.str());
-		vector<string> checkWords = SplitWords(C_OUTPUT_4);
-		BOOST_CHECK(words == checkWords);
+		RunTextInputTestcase(C_INPUT_TEXT_4, C_OUTPUT_4);
 	}
 BOOST_AUTO_TEST_SUITE_END()
