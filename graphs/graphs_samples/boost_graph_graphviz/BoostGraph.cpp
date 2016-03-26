@@ -1,8 +1,8 @@
-#include "stdafx.h"
+п»ї#include "stdafx.h"
 #include "BoostGraph.h"
 
 
-// "Бесконечно" большая стоимость, используется как маркер для непройденных вершин.
+// "Р‘РµСЃРєРѕРЅРµС‡РЅРѕ" Р±РѕР»СЊС€Р°СЏ СЃС‚РѕРёРјРѕСЃС‚СЊ, РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РєР°Рє РјР°СЂРєРµСЂ РґР»СЏ РЅРµРїСЂРѕР№РґРµРЅРЅС‹С… РІРµСЂС€РёРЅ.
 const int64_t CBoostGraph::INFINITIVE_COST = std::numeric_limits<int64_t>::max();
 
 
@@ -21,9 +21,44 @@ CBoostGraph::~CBoostGraph()
 {
 }
 
+bool CBoostGraph::ReadText(std::istream & in)
+{
+	size_t edgeCount = 0;
+	size_t vertexCount = 0;
+	in >> vertexCount >> edgeCount >> m_startId;
+	// РёРЅРґРµРєСЃ СѓРјРµРЅСЊС€Р°РµРј РЅР° РµРґРёРЅРёС†Сѓ, С‚.Рє. РёРЅРґРµРєСЃР°С†РёСЏ РІРµСЂС€РёРЅ РЅР°С‡РёРЅР°РµС‚СЃСЏ СЃ 0.
+	--m_startId;
+
+	for (size_t i = 0; i < vertexCount; ++i)
+	{
+		// add_vertex() РІРѕР·РІСЂР°С‰Р°РµС‚ РёРЅРґРµРєСЃ РІРµСЂС€РёРЅС‹ (size_t).
+		boost::add_vertex(m_graph);
+	}
+
+	for (size_t i = 0; i < edgeCount; ++i)
+	{
+		Edge edge;
+		size_t start = 0;
+		size_t end = 0;
+		if (!(in >> start >> end >> edge.weight))
+		{
+			return false;
+		}
+		// РёРЅРґРµРєСЃС‹ СѓРјРµРЅСЊС€Р°РµРј РЅР° РµРґРёРЅРёС†Сѓ, С‚.Рє. РёРЅРґРµРєСЃР°С†РёСЏ РІРµСЂС€РёРЅ РЅР°С‡РёРЅР°РµС‚СЃСЏ СЃ 0.
+		--start;
+		--end;
+
+		// add_edge(...) РІРѕР·РІСЂР°С‰Р°РµС‚ РїР°СЂСѓ {РёРЅРґРµРєСЃР°С‚РѕСЂ СЂРµР±СЂР°, bool}.
+		auto result = boost::add_edge(start, end, m_graph);
+		m_graph[result.first] = edge;
+	}
+
+	return true;
+}
+
 bool CBoostGraph::ReadGraphviz(std::istream & in)
 {
-	// Используем свойство вершины 'root' для обозначения начальной вершины.
+	// РСЃРїРѕР»СЊР·СѓРµРј СЃРІРѕР№СЃС‚РІРѕ РІРµСЂС€РёРЅС‹ 'root' РґР»СЏ РѕР±РѕР·РЅР°С‡РµРЅРёСЏ РЅР°С‡Р°Р»СЊРЅРѕР№ РІРµСЂС€РёРЅС‹.
 	// http://www.graphviz.org/doc/info/attrs.html#d:root
 	const char C_IS_START[] = "root";
 	const char C_WEIGHT[] = "weight";
@@ -41,7 +76,7 @@ bool CBoostGraph::ReadGraphviz(std::istream & in)
 		return false;
 	}
 
-	// Ищем начальную вершину.
+	// РС‰РµРј РЅР°С‡Р°Р»СЊРЅСѓСЋ РІРµСЂС€РёРЅСѓ.
 	auto vertices = m_graph.vertex_set();
 	auto it = std::find_if(vertices.begin(), vertices.end(), [this](size_t vi) {
 		return m_graph[vi].isStart;
@@ -65,8 +100,8 @@ void CBoostGraph::RunBellmanFord(std::ostream & out)
 		for (size_t vertexId : vertices)
 		{
 			const bool isLastIteration = (vertexId + 1 == size_t(vertices.size()));
-			// Обновляем состояние проходом по всем рёбрам.
-			// Оптимизация алгоритма: если состояние не изменилось, прерываем цикл.
+			// РћР±РЅРѕРІР»СЏРµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РїСЂРѕС…РѕРґРѕРј РїРѕ РІСЃРµРј СЂС‘Р±СЂР°Рј.
+			// РћРїС‚РёРјРёР·Р°С†РёСЏ Р°Р»РіРѕСЂРёС‚РјР°: РµСЃР»Рё СЃРѕСЃС‚РѕСЏРЅРёРµ РЅРµ РёР·РјРµРЅРёР»РѕСЃСЊ, РїСЂРµСЂС‹РІР°РµРј С†РёРєР».
 			if (!UpdateBellmanFordState(isLastIteration))
 			{
 				break;
@@ -76,14 +111,14 @@ void CBoostGraph::RunBellmanFord(std::ostream & out)
 	}
 	catch (CNegativeLoopException const& ex)
 	{
-		// Найден цикл отрицательной стоимости, печатаем его.
+		// РќР°Р№РґРµРЅ С†РёРєР» РѕС‚СЂРёС†Р°С‚РµР»СЊРЅРѕР№ СЃС‚РѕРёРјРѕСЃС‚Рё, РїРµС‡Р°С‚Р°РµРј РµРіРѕ.
 		PrintNegativeLoop(ex.m_vertexId, out);
 	}
 }
 
 void CBoostGraph::InitBellmanFordState()
 {
-	/* Обход через итераторы - каждый итератор при разыменовании даёт индекс вершины.
+	/* РћР±С…РѕРґ С‡РµСЂРµР· РёС‚РµСЂР°С‚РѕСЂС‹ - РєР°Р¶РґС‹Р№ РёС‚РµСЂР°С‚РѕСЂ РїСЂРё СЂР°Р·С‹РјРµРЅРѕРІР°РЅРёРё РґР°С‘С‚ РёРЅРґРµРєСЃ РІРµСЂС€РёРЅС‹.
 	vertex_iterator_t vi;
 	vertex_iterator_t viEnd;
 	for (std::tie(vi, viEnd) = boost::vertices(m_graph); vi != viEnd; ++vi)
@@ -92,12 +127,12 @@ void CBoostGraph::InitBellmanFordState()
 	}
 	*/
 
-	// Более современный (C++ 2011) вариант обхода вершин:
+	// Р‘РѕР»РµРµ СЃРѕРІСЂРµРјРµРЅРЅС‹Р№ (C++ 2011) РІР°СЂРёР°РЅС‚ РѕР±С…РѕРґР° РІРµСЂС€РёРЅ:
 	for (size_t vertexId : m_graph.vertex_set())
 	{
 		m_graph[vertexId].cost = INFINITIVE_COST;
 	}
-	// Инициализируем начальную вершину.
+	// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј РЅР°С‡Р°Р»СЊРЅСѓСЋ РІРµСЂС€РёРЅСѓ.
 	{
 		Vertex &start = m_graph[m_startId];
 		start.cost = 0;
@@ -107,7 +142,7 @@ void CBoostGraph::InitBellmanFordState()
 
 void CBoostGraph::PrintNegativeLoop(size_t vertexId, std::ostream & out)
 {
-	// Обходим цикл, пока не вернёмся к vertexId.
+	// РћР±С…РѕРґРёРј С†РёРєР», РїРѕРєР° РЅРµ РІРµСЂРЅС‘РјСЃСЏ Рє vertexId.
 	std::vector<size_t> negativeLoop;
 	negativeLoop.push_back(vertexId);
 	for (;;)
@@ -119,7 +154,7 @@ void CBoostGraph::PrintNegativeLoop(size_t vertexId, std::ostream & out)
 			break;
 		}
 	}
-	// Меняем порядок на обратный, чтобы распечатать цикл с начала.
+	// РњРµРЅСЏРµРј РїРѕСЂСЏРґРѕРє РЅР° РѕР±СЂР°С‚РЅС‹Р№, С‡С‚РѕР±С‹ СЂР°СЃРїРµС‡Р°С‚Р°С‚СЊ С†РёРєР» СЃ РЅР°С‡Р°Р»Р°.
 	std::reverse(negativeLoop.begin(), negativeLoop.end());
 
 	out << "No" << std::endl;
@@ -157,7 +192,7 @@ void CBoostGraph::PrintResults(std::ostream & out)
 
 bool CBoostGraph::UpdateBellmanFordState(bool isLastIteration)
 {
-	/* Обход через итераторы - каждый итератор при разыменовании даёт индекс ребра.
+	/* РћР±С…РѕРґ С‡РµСЂРµР· РёС‚РµСЂР°С‚РѕСЂС‹ - РєР°Р¶РґС‹Р№ РёС‚РµСЂР°С‚РѕСЂ РїСЂРё СЂР°Р·С‹РјРµРЅРѕРІР°РЅРёРё РґР°С‘С‚ РёРЅРґРµРєСЃ СЂРµР±СЂР°.
 	edge_iterator_t ei;
 	edge_iterator_t eiEnd;
 	for (std::tie(ei, eiEnd) = boost::edges(m_graph); ei != eiEnd; ++ei)
@@ -166,15 +201,15 @@ bool CBoostGraph::UpdateBellmanFordState(bool isLastIteration)
 	}
 	*/
 
-	/* Более современный (C++ 2011) вариант обхода вершин:
+	/* Р‘РѕР»РµРµ СЃРѕРІСЂРµРјРµРЅРЅС‹Р№ (C++ 2011) РІР°СЂРёР°РЅС‚ РѕР±С…РѕРґР° РІРµСЂС€РёРЅ:
 	edge_iterator_t ei;
 	edge_iterator_t eiEnd;
 	std::tie(ei, eiEnd) = boost::edges(m_graph);
 	auto range = boost::make_iterator_range(ei, eiEnd);
 	*/
 
-	// Временные переменные не нужны.
-	// Пара, возвращённая одной функцией, будет развёрнута в другой.
+	// Р’СЂРµРјРµРЅРЅС‹Рµ РїРµСЂРµРјРµРЅРЅС‹Рµ РЅРµ РЅСѓР¶РЅС‹.
+	// РџР°СЂР°, РІРѕР·РІСЂР°С‰С‘РЅРЅР°СЏ РѕРґРЅРѕР№ С„СѓРЅРєС†РёРµР№, Р±СѓРґРµС‚ СЂР°Р·РІС‘СЂРЅСѓС‚Р° РІ РґСЂСѓРіРѕР№.
 	auto range = boost::make_iterator_range(boost::edges(m_graph));
 	bool hasChanges = false;
 	for (auto edge : range)
@@ -186,8 +221,8 @@ bool CBoostGraph::UpdateBellmanFordState(bool isLastIteration)
 		{
 			if (isLastIteration)
 			{
-				// На последней итерации стоимость для какой-то вершины сократилась.
-				// Значит, есть бесконечный цикл.
+				// РќР° РїРѕСЃР»РµРґРЅРµР№ РёС‚РµСЂР°С†РёРё СЃС‚РѕРёРјРѕСЃС‚СЊ РґР»СЏ РєР°РєРѕР№-С‚Рѕ РІРµСЂС€РёРЅС‹ СЃРѕРєСЂР°С‚РёР»Р°СЃСЊ.
+				// Р—РЅР°С‡РёС‚, РµСЃС‚СЊ Р±РµСЃРєРѕРЅРµС‡РЅС‹Р№ С†РёРєР».
 				throw CNegativeLoopException(edge.m_target);
 			}
 			else
