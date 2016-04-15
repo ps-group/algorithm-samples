@@ -1,3 +1,7 @@
+##################################################################
+# This is QtCreator IDE C++ project for rpn_expressions example. #
+##################################################################
+
 TEMPLATE = app
 CONFIG += console c++11
 CONFIG -= app_bundle
