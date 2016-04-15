@@ -78,11 +78,11 @@ BOOST_AUTO_TEST_SUITE(CRPNExpressionTokenizer_class)
         BOOST_CHECK_CLOSE_FRACTION(value, 9.28, EPSILON);
     }
 
-    BOOST_AUTO_TEST_CASE(trivial_calculation_finishes_OK)
-    {
-        CRPNExpressionTokenizer tokenizer;
-        BOOST_CHECK(tokenizer.Parse("94 0 * 24 24 / -"));
-        double value = ExecuteOperations(tokenizer.GetResult());
-        BOOST_CHECK_CLOSE_FRACTION(value, -1, EPSILON);
-    }
+	BOOST_AUTO_TEST_CASE(trivial_calculation_finishes_OK)
+	{
+		CRPNExpressionTokenizer tokenizer;
+		BOOST_CHECK(tokenizer.Parse("94 0 * 24 24 / -"));
+		double value = ExecuteOperations(tokenizer.GetResult());
+		BOOST_CHECK_CLOSE_FRACTION(value, -1, EPSILON);
+	}
 BOOST_AUTO_TEST_SUITE_END()

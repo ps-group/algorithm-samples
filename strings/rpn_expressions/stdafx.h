@@ -20,7 +20,8 @@
   #pragma warning (disable: 4512)
 #endif // _MSC_VER
 
-#define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_NO_MAIN
+#define BOOST_TEST_INCLUDED
 
 #if defined(_MSC_VER)
   #pragma warning (disable: 4702)

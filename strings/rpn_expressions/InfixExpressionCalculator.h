@@ -1,6 +1,8 @@
 #pragma once
 #include <boost/utility/string_ref.hpp>
 
+// Совершает разбор выражения в инфиксной (естественной) нотации.
+// Возвращает результат вычисления выражения.
 class CInfixExpressionCalculator
 {
 public:
