@@ -1,3 +1,4 @@
+﻿#include "stdafx.h"
 #include "FilterLetters.h"
 #include <iostream>
 
@@ -11,6 +12,8 @@ int main()
     setlocale(LC_ALL, "POSIX");
 
 #if defined(_WIN32)
+    // Для Windows устанавливаем кодировку EOM (DOS) для всех функций стандартной библиотеки C.
+    // Под Linux строка ".OCP" принята не будет.
     setlocale(LC_ALL, ".OCP");
 #endif
 
