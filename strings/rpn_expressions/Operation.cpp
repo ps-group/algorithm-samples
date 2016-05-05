@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Operation.h"
+#include <cassert>
 
 // Оператор сравнения учитывает возможное накопление погрешности
 // в числах с плавающей точкой.
@@ -13,6 +14,7 @@ bool SOperation::operator ==(const SOperation &other) const
 
 SOperation MakeBinaryOperation(Operation op)
 {
+    assert(op != Operation::Push);
     SOperation result;
     result.op = op;
     return result;
