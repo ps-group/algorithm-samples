@@ -1,4 +1,6 @@
+#include "stdafx.h"
 #include "InfixExpressionCalculator.h"
+#include <cctype>
 
 double CInfixExpressionCalculator::ParseExpr(const std::string &expr)
 {

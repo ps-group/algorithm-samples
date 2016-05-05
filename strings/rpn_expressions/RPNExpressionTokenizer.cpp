@@ -44,9 +44,10 @@ bool CRPNExpressionTokenizer::Advance(const std::string &expression, size_t &pos
     else
     {
         // Следует проверить strtod на ошибки, т.к. в строке может оказаться несколько точек.
+        // Для этого передаём 2-й параметр и проверяем его значение согласно документации функции strtod.
         char *pEnd = nullptr;
         const double value = strtod(m_currentNumber.c_str(), &pEnd);
-        if (pEnd == m_currentNumber.c_str())
+        if (*pEnd != '\0')
         {
             std::cerr << "Invalid number " << m_currentNumber << std::endl;
             return false;
