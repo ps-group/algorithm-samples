@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "FilterLetters.h"
 #include <iostream>
 
@@ -20,7 +20,8 @@ string FilterLetters_c_windows(const string &input)
     output.reserve(input.size());
     for (char ch : input)
     {
-        if (isalpha(static_cast<unsigned char>(ch)))
+        bool isAscii = (ch >= 0 && ch < 128);
+        if (isAscii && isalpha(ch))
         {
             output += ch;
         }
@@ -57,7 +58,7 @@ string FilterLetters_c_unix(const string &input)
     outputW.reserve(inputW.size());
     for (wchar_t ch : inputW)
     {
-        if (iswalpha(unsigned(ch)))
+        if (iswalpha(ch))
         {
             outputW += ch;
         }
@@ -82,7 +83,7 @@ std::string FilterLetters_cxx11_utf8(const std::string &input)
     outputW.reserve(inputW.size());
     for (wchar_t ch : inputW)
     {
-        if (iswalpha(unsigned(ch)))
+        if (iswalpha(ch))
         {
             outputW += ch;
         }

@@ -20,8 +20,7 @@ string FilterLetters_c_windows(const string &input)
     output.reserve(input.size());
     for (char ch : input)
     {
-        bool isAscii = (ch >= 0 && ch < 128);
-        if (isAscii && isalpha(ch))
+        if (isalpha((unsigned char)ch))
         {
             output += ch;
         }
