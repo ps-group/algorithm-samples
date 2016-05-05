@@ -61,15 +61,23 @@ void CBoostGraph::RunPrima(std::ostream & out)
 
 std::vector<CBoostGraph::edge_descriptor> CBoostGraph::FindMinimalTree()
 {
+    SerializeCurrentStep();
+
     auto vertices = m_graph.vertex_set();
-    const size_t startVertex = vertices.front();
     std::unordered_set<size_t> remainingIds(vertices.begin(), vertices.end());
-    remainingIds.erase(startVertex);
+
+    // Определим вспомогательную λ-функцию, отмечающую вершину как пройденную.
+    auto markVertex = [&](size_t vertexId) {
+        remainingIds.erase(vertexId);
+        m_graph[vertexId].accepted = true;
+    };
+    markVertex(vertices.front());
+
+    SerializeCurrentStep();
 
     std::vector<edge_descriptor> minimalTree;
     std::vector<edge_descriptor> candidates;
 
-    SerializeCurrentStep();
     while (!remainingIds.empty())
     {
         candidates.clear();
@@ -89,23 +97,36 @@ std::vector<CBoostGraph::edge_descriptor> CBoostGraph::FindMinimalTree()
         edge_descriptor bestEdge = *std::min_element(candidates.begin(), candidates.end(), compareFn);
 
         // Добавляем ребро в минимальное дерево и помечаем вершины как пройденные
+        m_graph[bestEdge].accepted = true;
         minimalTree.push_back(bestEdge);
-        remainingIds.erase(bestEdge.m_source);
-        remainingIds.erase(bestEdge.m_target);
+        markVertex(bestEdge.m_source);
+        markVertex(bestEdge.m_target);
         SerializeCurrentStep();
     }
 
     return minimalTree;
 }
 
-void CBoostGraph::SerializeCurrentStep()
+void CBoostGraph::SerializeCurrentStep() const
 {
     if (!m_stepHandler)
     {
         return;
     }
-    // TODO: обеспечить сериализацию и вызов m_stepHandler.
-    // Так мы получим данные для визуализации.
+    std::stringstream out;
+
+    auto vertexWriter = [&](std::ostream& out, size_t vertexId) {
+        const char *color = (m_graph[vertexId].accepted ? "FF0000" : "C0FFC0");
+        out << "[style=\"filled\", fillcolor=\"#" << color << "\"]";
+    };
+    auto edgeWriter = [&](std::ostream& out, edge_descriptor edgeId) {
+        unsigned width = (m_graph[edgeId].accepted ? 5 : 2);
+        out << "[penwidth=" << width << "]";
+
+    };
+
+    boost::write_graphviz(out, m_graph, vertexWriter, edgeWriter);
+    m_stepHandler(out.str());
 }
 
 void CBoostGraph::PrintResults(std::vector<edge_descriptor> &&minimalTree, std::ostream & out)

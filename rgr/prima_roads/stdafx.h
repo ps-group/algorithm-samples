@@ -11,6 +11,9 @@
 #include <iostream>
 #include <unordered_set>
 
+#include <SFML/Window.hpp>
+#include <SFML/Graphics.hpp>
+
 #ifdef _WIN32
 #pragma warning (disable: 4512)
 #endif
