@@ -44,7 +44,8 @@ void RunTextInputTestcase(std::string const& inputText, std::string const& expec
 	stringstream input(inputText);
 	stringstream output;
 	BOOST_CHECK(graph.ReadText(input));
-    graph.RunPrima(output);
+    graph.RunPrima();
+    graph.PrintResults(output);
 	vector<string> words = SplitWords(output.str());
     vector<string> expectedWords = SplitWords(expectedOutput);
     BOOST_CHECK(words == expectedWords);

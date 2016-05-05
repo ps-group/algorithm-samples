@@ -54,12 +54,7 @@ bool CBoostGraph::ReadText(std::istream & in)
 	return true;
 }
 
-void CBoostGraph::RunPrima(std::ostream & out)
-{
-    PrintResults(FindMinimalTree(), out);
-}
-
-std::vector<CBoostGraph::edge_descriptor> CBoostGraph::FindMinimalTree()
+void CBoostGraph::RunPrima()
 {
     SerializeCurrentStep();
 
@@ -75,7 +70,6 @@ std::vector<CBoostGraph::edge_descriptor> CBoostGraph::FindMinimalTree()
 
     SerializeCurrentStep();
 
-    std::vector<edge_descriptor> minimalTree;
     std::vector<edge_descriptor> candidates;
 
     while (!remainingIds.empty())
@@ -98,13 +92,11 @@ std::vector<CBoostGraph::edge_descriptor> CBoostGraph::FindMinimalTree()
 
         // Добавляем ребро в минимальное дерево и помечаем вершины как пройденные
         m_graph[bestEdge].accepted = true;
-        minimalTree.push_back(bestEdge);
+        m_minimalTree.push_back(bestEdge);
         markVertex(bestEdge.m_source);
         markVertex(bestEdge.m_target);
         SerializeCurrentStep();
     }
-
-    return minimalTree;
 }
 
 void CBoostGraph::SerializeCurrentStep() const
@@ -129,9 +121,9 @@ void CBoostGraph::SerializeCurrentStep() const
     m_stepHandler(out.str());
 }
 
-void CBoostGraph::PrintResults(std::vector<edge_descriptor> &&minimalTree, std::ostream & out)
+bool CBoostGraph::PrintResults(std::ostream & out)
 {
-    std::vector<edge_descriptor> edges(minimalTree);
+    std::vector<edge_descriptor> edges(m_minimalTree);
     int64_t cost = 0;
 
     for (edge_descriptor & edge : edges)
@@ -151,4 +143,5 @@ void CBoostGraph::PrintResults(std::vector<edge_descriptor> &&minimalTree, std::
     {
         out << (edge.m_source + 1) << " " << (edge.m_target + 1) << std::endl;
     }
+    return bool(out);
 }
