@@ -1,5 +1,6 @@
 #pragma once
 #include "stdafx.h"
+#include "AppMenu.h"
 
 class CBoostGraph;
 
@@ -20,13 +21,12 @@ private:
     };
 
     void OnGraphAlgorithmStep(const std::string &dotCode);
-
-    void OnClick();
-    void OnWaitingInput();
+    void SetState(State state);
     void OnRunningDemo();
-    void OnWaitingOutput();
     void RunAlgorithmDemo();
     bool SwitchNextFrame();
+    void AskOpenInput();
+    void AskSaveOutput();
 
     State m_state = State::WaitingInput;
     sf::Clock m_clock;
@@ -34,4 +34,7 @@ private:
     sf::Font m_font;
     std::unique_ptr<CBoostGraph> m_graph;
     sf::Texture m_activeFrame;
+    std::unique_ptr<CAppMenu> m_menu;
+    size_t m_openActionId = 0;
+    size_t m_saveActionId = 0;
 };
