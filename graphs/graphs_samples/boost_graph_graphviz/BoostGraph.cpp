@@ -1,6 +1,7 @@
 ﻿#include "stdafx.h"
 #include "BoostGraph.h"
 
+#undef max
 
 // "Бесконечно" большая стоимость, используется как маркер для непройденных вершин.
 const int64_t CBoostGraph::INFINITIVE_COST = std::numeric_limits<int64_t>::max();
@@ -159,9 +160,9 @@ void CBoostGraph::PrintNegativeLoop(size_t vertexId, std::ostream & out)
 
 	out << "No" << std::endl;
 	out << negativeLoop.size();
-	for (size_t vertexId : negativeLoop)
+	for (size_t loopVertexId : negativeLoop)
 	{
-		out << ' ' << (vertexId + 1);
+		out << ' ' << (loopVertexId + 1);
 	}
 	out << std::endl;
 }
@@ -181,9 +182,9 @@ void CBoostGraph::PrintResults(std::ostream & out)
 			out << vertex.cost << ' ';
 			GetShortestPath(vertexId, shortestPath);
 			out << shortestPath.size();
-			for (size_t vertexId : shortestPath)
+			for (size_t pathVertexId : shortestPath)
 			{
-				out << ' ' << (vertexId + 1);
+				out << ' ' << (pathVertexId + 1);
 			}
 			out << std::endl;
 		}

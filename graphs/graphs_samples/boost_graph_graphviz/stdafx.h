@@ -17,7 +17,8 @@
 #include <boost/graph/iteration_macros.hpp>
 
 #define BOOST_TEST_INCLUDED
+#define BOOST_TEST_NO_MAIN
 #pragma warning (disable: 4702)
 #pragma warning (disable: 4535)
-#include <boost/test/unit_test.hpp>
+#include <boost/test/included/unit_test.hpp>
 #include <boost/algorithm/string/replace.hpp>
