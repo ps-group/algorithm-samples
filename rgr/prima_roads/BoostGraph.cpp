@@ -112,8 +112,9 @@ void CBoostGraph::SerializeCurrentStep() const
         out << "[style=\"filled\", fillcolor=\"#" << color << "\"]";
     };
     auto edgeWriter = [&](std::ostream& out, edge_descriptor edgeId) {
-        unsigned width = (m_graph[edgeId].accepted ? 5 : 2);
-        out << "[penwidth=" << width << "]";
+        auto &edge = m_graph[edgeId];
+        unsigned width = (edge.accepted ? 5 : 2);
+        out << "[penwidth=" << width << ", label=\"" << std::to_string(edge.price) << "\"]";
 
     };
 

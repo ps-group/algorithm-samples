@@ -9,23 +9,29 @@ namespace
 {
 const unsigned WINDOW_WIDTH = 800;
 const unsigned WINDOW_HEIGHT = 600;
+const unsigned MENU_BAR_HEIGHT = 20;
 const unsigned WINDOW_STYLE = sf::Style::Titlebar | sf::Style::Close;
-const int FRAME_SWITCH_INTERVAL = 300;
+const int FRAME_SWITCH_INTERVAL = 1000;
 }
 
 CAppWindow::CAppWindow()
     : sf::RenderWindow(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Prima Roads - RGR Sample", WINDOW_STYLE)
-    , m_graph(new CBoostGraph)
 {
+    m_menu = std::make_unique<CAppMenu>("File");
+    m_menu->SetFrame(sf::FloatRect(0, 0, WINDOW_WIDTH, MENU_BAR_HEIGHT));
+    m_openActionId = m_menu->AddAction("Open...", std::bind(&CAppWindow::AskOpenInput, this));
+    m_saveActionId = m_menu->AddAction("Save...", std::bind(&CAppWindow::AskSaveOutput, this));
+
     setFramerateLimit(60);
     setVerticalSyncEnabled(true);
+    SetState(State::WaitingInput);
 
     m_font.loadFromFile("res/Ubuntu-R.ttf");
-    m_graph->SetStepHandler(std::bind(&CAppWindow::OnGraphAlgorithmStep, this, std::placeholders::_1));
 }
 
 CAppWindow::~CAppWindow()
 {
+    m_menu.reset();
 }
 
 void CAppWindow::EnterLoop()
@@ -40,25 +46,15 @@ void CAppWindow::EnterLoop()
                 close();
                 return;
             }
-            else if (event.type == sf::Event::MouseButtonReleased)
-            {
-                OnClick();
-            }
+            m_menu->OnEvent(event);
         }
 
         clear(sf::Color::Black);
-        switch (m_state)
+        if (m_state != State::WaitingInput)
         {
-        case State::WaitingInput:
-            OnWaitingInput();
-            break;
-        case State::RunningDemo:
             OnRunningDemo();
-            break;
-        case State::WaitingOutput:
-            OnWaitingOutput();
-            break;
         }
+        draw(*m_menu);
         display();
     }
 }
@@ -77,63 +73,20 @@ void CAppWindow::OnGraphAlgorithmStep(const std::string &dotCode)
     }
 }
 
-void CAppWindow::OnClick()
+void CAppWindow::SetState(CAppWindow::State state)
 {
-    if (m_state == State::WaitingInput)
-    {
-        const char *filters[] = { "*.txt" };
-        char const *result = tinyfd_openFileDialog("Select input file", "", 1, filters, "", false);
-        // Пользователь отменил выбор файла.
-        if (result == nullptr)
-        {
-            return;
-        }
-        std::ifstream in(result);
-        if (!in.is_open() || !m_graph->ReadText(in))
-        {
-            tinyfd_messageBox("Error", "I/O error when reading input file", "ok", "error", 1);
-        }
-        else
-        {
-            RunAlgorithmDemo();
-        }
-    }
-    else if (m_state == State::WaitingOutput)
-    {
-        const char *filters[] = { "*.txt" };
-        char const *result = tinyfd_saveFileDialog("Select input file", "", 1, filters, "");
-        // Пользователь отменил выбор файла.
-        if (result == nullptr)
-        {
-            return;
-        }
-        std::ofstream out(result);
-        if (!out.is_open() || !m_graph->PrintResults(out))
-        {
-            tinyfd_messageBox("Error", "I/O error when writing output file", "ok", "error", 1);
-        }
-        else
-        {
-            tinyfd_messageBox("Success", "File saved OK", "ok", "info", 1);
-            close();
-        }
-    }
-}
-
-void CAppWindow::OnWaitingInput()
-{
-    sf::Text label("Click to select input file.", m_font);
-    draw(label);
+    m_state = state;
+    m_menu->SetActionEnabled(m_openActionId, state != State::RunningDemo);
+    m_menu->SetActionEnabled(m_saveActionId, state == State::WaitingOutput);
 }
 
 void CAppWindow::OnRunningDemo()
 {
-    if (m_clock.getElapsedTime().asMilliseconds() >= FRAME_SWITCH_INTERVAL)
+    if (m_state == State::RunningDemo && m_clock.getElapsedTime().asMilliseconds() >= FRAME_SWITCH_INTERVAL)
     {
         if (!SwitchNextFrame())
         {
-            m_state = State::WaitingOutput;
-            return;
+            SetState(State::WaitingOutput);
         }
     }
     sf::Sprite sprite;
@@ -149,17 +102,11 @@ void CAppWindow::OnRunningDemo()
     draw(sprite);
 }
 
-void CAppWindow::OnWaitingOutput()
-{
-    sf::Text label("Click to select file where to save output.", m_font);
-    draw(label);
-}
-
 void CAppWindow::RunAlgorithmDemo()
 {
     m_pendingFramePaths.clear();
     m_graph->RunPrima();
-    m_state = State::RunningDemo;
+    SetState(State::RunningDemo);
     SwitchNextFrame();
 }
 
@@ -175,4 +122,48 @@ bool CAppWindow::SwitchNextFrame()
     m_pendingFramePaths.pop_front();
 
     return true;
+}
+
+void CAppWindow::AskOpenInput()
+{
+    const char *filters[] = { "*.txt" };
+    char const *result = tinyfd_openFileDialog("Select input file", "", 1, filters, "", false);
+    // Пользователь отменил выбор файла.
+    if (result == nullptr)
+    {
+        return;
+    }
+    m_graph = std::make_unique<CBoostGraph>();
+    m_graph->SetStepHandler(std::bind(&CAppWindow::OnGraphAlgorithmStep, this, std::placeholders::_1));
+
+    std::ifstream in(result);
+    if (!in.is_open() || !m_graph->ReadText(in))
+    {
+        m_graph.reset();
+        tinyfd_messageBox("Error", "I/O error when reading input file", "ok", "error", 1);
+    }
+    else
+    {
+        RunAlgorithmDemo();
+    }
+}
+
+void CAppWindow::AskSaveOutput()
+{
+    const char *filters[] = { "*.txt" };
+    char const *result = tinyfd_saveFileDialog("Select output file", "", 1, filters, "");
+    // Пользователь отменил выбор файла.
+    if (result == nullptr)
+    {
+        return;
+    }
+    std::ofstream out(result);
+    if (!out.is_open() || !m_graph->PrintResults(out))
+    {
+        tinyfd_messageBox("Error", "I/O error when writing output file", "ok", "error", 1);
+    }
+    else
+    {
+        tinyfd_messageBox("Success", "File saved OK", "ok", "info", 1);
+    }
 }
