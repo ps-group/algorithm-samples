@@ -11,9 +11,10 @@ const sf::Color DISABLED_COLOR(120, 120, 120);
 const sf::Color POPUP_BACK_COLOR(250, 250, 250);
 const sf::Color MENU_BACK_COLOR(230, 220, 220);
 const float MIN_POPUP_WIDTH = 100;
-const float ACTION_HEIGHT = 20;
-const unsigned FONT_SIZE = 14;
-const float TEXT_PADDING = 2;
+const float ACTION_HEIGHT = 22;
+const unsigned FONT_SIZE = 16;
+const float TEXT_PADDING_X = 5;
+const float TEXT_PADDING_Y = 0;
 
 class CTransformTranslateScope
 {
@@ -50,7 +51,7 @@ size_t CAppMenu::AddAction(const std::string &caption, const CAppMenu::ActionHan
     SAction action;
     action.m_text = std::make_unique<sf::Text>(caption, m_font);
     action.m_handler = handler;
-    action.m_text->setPosition(TEXT_PADDING, TEXT_PADDING + ACTION_HEIGHT * float(m_actions.size()));
+    action.m_text->setPosition(TEXT_PADDING_X, TEXT_PADDING_Y + ACTION_HEIGHT * float(m_actions.size()));
     action.m_text->setCharacterSize(FONT_SIZE);
     action.m_text->setColor(ENABLED_COLOR);
 
@@ -71,7 +72,7 @@ void CAppMenu::SetFrame(const sf::FloatRect &frame)
     m_frame = frame;
     m_shape.setPosition(frame.left, frame.top);
     m_shape.setSize(sf::Vector2f(frame.width, frame.height));
-    m_title.setPosition(TEXT_PADDING + m_frame.left, TEXT_PADDING + m_frame.top);
+    m_title.setPosition(TEXT_PADDING_X + m_frame.left, TEXT_PADDING_Y + m_frame.top);
 }
 
 bool CAppMenu::OnEvent(const sf::Event &event)
@@ -162,7 +163,7 @@ void CAppMenu::OnPopupClicked(float x, float y)
 sf::Vector2f CAppMenu::GetPopupSize() const
 {
     auto accumulateFn = [](float maxWidth, const SAction &action) {
-        return std::max(maxWidth, 2.f * TEXT_PADDING + action.m_text->getLocalBounds().width);
+        return std::max(maxWidth, 2.f * TEXT_PADDING_X + action.m_text->getLocalBounds().width);
     };
     float maxTextWidth = std::accumulate(m_actions.begin(), m_actions.end(), MIN_POPUP_WIDTH, accumulateFn);
     return sf::Vector2f(maxTextWidth, ACTION_HEIGHT * float(m_actions.size()));
