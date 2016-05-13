@@ -1,4 +1,6 @@
+#include "stdafx.h"
 #include "AppMenu.h"
+#include <boost/range/numeric.hpp>
 
 #ifdef max
 #undef max
@@ -83,16 +85,18 @@ bool CAppMenu::OnEvent(const sf::Event &event)
     case sf::Event::MouseButtonPressed:
     {
         const auto &data = event.mouseButton;
-        m_mousePressCaptured = m_frame.contains(data.x, data.y)
-                || (m_isOpen && GetPopupFrame().contains(data.x, data.y));
+		sf::Vector2f mousePos(float(data.x), float(data.y));
+        m_mousePressCaptured = m_frame.contains(mousePos)
+                || (m_isOpen && GetPopupFrame().contains(mousePos));
         break;
     }
     case sf::Event::MouseButtonReleased:
     {
         const auto &data = event.mouseButton;
+		sf::Vector2f mousePos(float(data.x), float(data.y));
         if (m_mousePressCaptured)
         {
-            if (m_frame.contains(data.x, data.y))
+            if (m_frame.contains(mousePos))
             {
                 OnMenuClicked();
                 handled = true;
@@ -100,9 +104,9 @@ bool CAppMenu::OnEvent(const sf::Event &event)
             else if (m_isOpen)
             {
                 sf::FloatRect popupFrame = GetPopupFrame();
-                if (popupFrame.contains(data.x, data.y))
+                if (popupFrame.contains(mousePos))
                 {
-                    OnPopupClicked(data.x - popupFrame.left, data.y - popupFrame.top);
+                    OnPopupClicked(mousePos.x - popupFrame.left, mousePos.y - popupFrame.top);
                     handled = true;
                 }
                 else
@@ -165,7 +169,7 @@ sf::Vector2f CAppMenu::GetPopupSize() const
     auto accumulateFn = [](float maxWidth, const SAction &action) {
         return std::max(maxWidth, 2.f * TEXT_PADDING_X + action.m_text->getLocalBounds().width);
     };
-    float maxTextWidth = std::accumulate(m_actions.begin(), m_actions.end(), MIN_POPUP_WIDTH, accumulateFn);
+    float maxTextWidth = boost::accumulate(m_actions, MIN_POPUP_WIDTH, accumulateFn);
     return sf::Vector2f(maxTextWidth, ACTION_HEIGHT * float(m_actions.size()));
 }
 

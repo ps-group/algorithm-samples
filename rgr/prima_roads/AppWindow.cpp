@@ -18,7 +18,7 @@ CAppWindow::CAppWindow()
     : sf::RenderWindow(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Prima Roads - RGR Sample", WINDOW_STYLE)
 {
     m_menu = std::make_unique<CAppMenu>("File");
-    m_menu->SetFrame(sf::FloatRect(0, 0, WINDOW_WIDTH, MENU_BAR_HEIGHT));
+    m_menu->SetFrame(sf::FloatRect(0, 0, float(WINDOW_WIDTH), float(MENU_BAR_HEIGHT)));
     m_openActionId = m_menu->AddAction("Open...", std::bind(&CAppWindow::AskOpenInput, this));
     m_saveActionId = m_menu->AddAction("Save...", std::bind(&CAppWindow::AskSaveOutput, this));
 

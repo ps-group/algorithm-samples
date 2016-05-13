@@ -94,9 +94,9 @@ std::string FilterLetters_cxx11_utf8(const std::string &input)
 #if defined(_WIN32)
 std::string FilterLetters_winapi(const std::string &input)
 {
-    int estimatedLength = MultiByteToWideChar(CP_OEMCP, 0, input.c_str(), input.size(), NULL, 0);
+    int estimatedLength = MultiByteToWideChar(CP_OEMCP, 0, input.c_str(), int(input.size()), NULL, 0);
     std::wstring inputW(estimatedLength, 0);
-    MultiByteToWideChar(CP_OEMCP, 0, input.c_str(), input.size(), &inputW[0], estimatedLength);
+    MultiByteToWideChar(CP_OEMCP, 0, input.c_str(), int(input.size()), &inputW[0], estimatedLength);
 
     wstring outputW;
     outputW.reserve(inputW.size());

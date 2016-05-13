@@ -88,6 +88,9 @@ misrepresented as being the original software.
 /* #define TINYFD_WIN_CONSOLE_ONLY //*/
 
 #ifdef _WIN32
+#pragma warning(disable:4706)
+#pragma warning(disable:4459)
+#pragma warning(disable:4458)
  #ifndef _WIN32_WINNT
  #define _WIN32_WINNT 0x0500
  #endif
@@ -268,7 +271,7 @@ static void replaceSubStr ( char const * const aSource ,
 	char const * pOccurence ;
 	char const * p ;
 	char const * lNewSubStr = "" ;
-	int lOldSubLen = strlen ( aOldSubStr ) ;
+	int lOldSubLen = int(strlen ( aOldSubStr ));
 	
 	if ( ! aSource )
 	{
@@ -367,7 +370,7 @@ static char const * ensureFilesExist( char * const aDestination ,
 	{
 		return NULL ;
 	}
-	lLen = strlen( aSourcePathsAndNames ) ;
+	lLen = int(strlen( aSourcePathsAndNames ) );
 	if ( ! lLen )
 	{
 		return NULL ;
@@ -376,7 +379,7 @@ static char const * ensureFilesExist( char * const aDestination ,
 	p = aSourcePathsAndNames ;
 	while ( (p2 = strchr(p, '|')) != NULL )
 	{
-		lLen = p2-p ;		
+		lLen = int(p2-p) ;		
 		memmove(lDestination,p,lLen);
 		lDestination[lLen] = '\0';
 		if ( fileExists ( lDestination ) )
@@ -389,7 +392,7 @@ static char const * ensureFilesExist( char * const aDestination ,
 	}
 	if ( fileExists ( p ) )
 	{
-		lLen = strlen(p) ;		
+		lLen = int(strlen(p)) ;		
 		memmove(lDestination,p,lLen);
 		lDestination[lLen] = '\0';
 	}
@@ -465,7 +468,7 @@ static int messageBoxWinGui (
 		aCode += MB_OK ;
 	}
 
-	lBoxReturnValue = MessageBox(NULL, aMessage, aTitle, aCode);
+	lBoxReturnValue = MessageBoxA(NULL, aMessage, aTitle, aCode);
 	if ( ( ( aDialogType
 		  && strcmp("okcancel", aDialogType)
 		  && strcmp("yesno", aDialogType) ) )
@@ -707,7 +710,7 @@ static char const * saveFileDialogWinGui (
 	char lFilterPatterns[MAX_PATH_OR_CMD] = "";
 	int i ;
 	char * p;
-	OPENFILENAME ofn ;
+	OPENFILENAMEA ofn ;
 	char * lRetval;
 	HRESULT lHResult;
 
@@ -744,7 +747,7 @@ static char const * saveFileDialogWinGui (
 		}
 	}
     
-	ofn.lStructSize     = sizeof(OPENFILENAME) ;
+	ofn.lStructSize     = sizeof(OPENFILENAMEA) ;
 	ofn.hwndOwner       = 0 ;
 	ofn.hInstance       = 0 ;
 	ofn.lpstrFilter     = lFilterPatterns ;
@@ -766,7 +769,7 @@ static char const * saveFileDialogWinGui (
 	ofn.lpfnHook        = NULL ;
 	ofn.lpTemplateName  = NULL ;
 
-	if ( GetSaveFileName ( & ofn ) == 0 )
+	if ( GetSaveFileNameA ( & ofn ) == 0 )
 	{
 		lRetval = NULL ;
 	}
@@ -799,7 +802,7 @@ static char const * openFileDialogWinGui (
 	size_t lLengths[MAX_MULTIPLE];
 	int i , j ;
 	char * p;
-	OPENFILENAME ofn;
+	OPENFILENAMEA ofn;
   size_t lBuffLen ;
 	char * lRetval;
 	HRESULT lHResult;
@@ -837,7 +840,7 @@ static char const * openFileDialogWinGui (
 		}
 	}
 
-	ofn.lStructSize     = sizeof ( OPENFILENAME ) ;
+	ofn.lStructSize     = sizeof ( OPENFILENAMEA ) ;
 	ofn.hwndOwner       = 0 ;
 	ofn.hInstance       = 0 ;
 	ofn.lpstrFilter		= lFilterPatterns;
@@ -863,7 +866,7 @@ static char const * openFileDialogWinGui (
 		ofn.Flags |= OFN_ALLOWMULTISELECT;
 	}
 
-	if ( GetOpenFileName ( & ofn ) == 0 )
+	if ( GetOpenFileNameA ( & ofn ) == 0 )
 	{
 		lRetval = NULL ;
 	}
@@ -917,7 +920,8 @@ static char const * selectFolderDialogWinGui (
 	char const * const aTitle , /*  NULL or "" */
 	char const * const aDefaultPath ) /* NULL or "" */
 {
-	BROWSEINFO bInfo ;
+	(void)aDefaultPath;
+	BROWSEINFOA bInfo ;
 	LPITEMIDLIST lpItem ;
 	HRESULT lHResult;
 
@@ -933,10 +937,10 @@ static char const * selectFolderDialogWinGui (
 	bInfo.lParam = 0 ;
 	bInfo.iImage = -1 ;
 
-	lpItem = SHBrowseForFolder ( & bInfo ) ;
+	lpItem = SHBrowseForFolderA ( & bInfo ) ;
 	if ( lpItem )
 	{
-		SHGetPathFromIDList ( lpItem , aoBuff ) ;
+		SHGetPathFromIDListA ( lpItem , aoBuff ) ;
 	}
 
 	if (lHResult==S_OK || lHResult==S_FALSE) 
@@ -953,6 +957,7 @@ static char const * colorChooserWinGui(
 	unsigned char const aDefaultRGB[3], /* { 0 , 255 , 255 } */
 	unsigned char aoResultRGB[3]) /* { 0 , 0 , 0 } */
 {
+	(void)aTitle;
 	static CHOOSECOLOR cc;
 	static COLORREF crCustColors[16];
 	static char lResultHexRGB[8];
@@ -1040,6 +1045,7 @@ static int messageBoxWinConsole (
     char const * const aIconType , /* "info" "warning" "error" "question" */
     int const aDefaultButton ) /* 0 for cancel/no , 1 for ok/yes */
 {
+	(void)aIconType;
 	char lDialogString[MAX_PATH_OR_CMD];
 	char lDialogFile[MAX_PATH_OR_CMD];
 	FILE * lIn;
@@ -1279,6 +1285,7 @@ static char const * openFileDialogWinConsole (
     char const * const aDefaultPathAndFile , /*  NULL or "" */
     int const aAllowMultipleSelects ) /* 0 or 1 */
 {
+	(void)aAllowMultipleSelects;
 	char lFilterPatterns[MAX_PATH_OR_CMD] = "";
 	char lDialogString[MAX_PATH_OR_CMD] ;
 	FILE * lIn;

@@ -1,6 +1,8 @@
 #ifndef __STDAFX_H
 #define __STDAFX_H
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #ifdef _WIN32
 #include <SDKDDKVer.h>
 #include <tchar.h>
@@ -18,6 +20,8 @@
 
 #ifdef _WIN32
 #pragma warning (disable: 4512)
+#pragma warning (disable: 4458)
+#pragma warning (disable: 4459)
 #endif
 
 #include <boost/graph/graphviz.hpp>

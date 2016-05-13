@@ -58,3 +58,12 @@ bool CUtils::RunProcess(const std::string &command)
     std::fputs(std::strerror(errno), stderr);
     return false;
 }
+
+std::string CUtils::GetResourcesRoot()
+{
+#ifdef _WIN32
+	return "..\\..\\..\\..\\..\\rgr\prima_roads\res";
+#else
+	return "res";
+#endif
+}
